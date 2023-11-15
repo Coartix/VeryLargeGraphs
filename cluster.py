@@ -1,0 +1,49 @@
+import networkx as nx
+from pyspark import SparkContext
+import time
+
+def bronKerbosch1_parallel(R, P, X, G):
+    if len(P) == 0 and len(X) == 0:
+        return [R]
+    
+    results = []
+    for v in P.copy():
+        subgraph = G.subgraph(P.intersection(set(G.neighbors(v))).union({v}))
+        subresult = bronKerbosch1_parallel(R.union({v}), P.intersection(set(G.neighbors(v))), X.intersection(set(G.neighbors(v))), subgraph)
+        results.extend(subresult)
+        P.remove(v)
+        X.add(v)
+    
+    return results
+
+def parallel_bronKerbosch(sc, graph):
+    nodes = list(graph.nodes())
+    
+    # Broadcast the graph to all workers
+    broadcast_graph = sc.broadcast(graph)
+    # Parallelize the nodes
+    parallel_nodes = sc.parallelize(nodes)
+    
+    # Use map to apply the function in parallel
+    result_rdd = parallel_nodes.map(lambda v: bronKerbosch1_parallel({v}, set(graph.neighbors(v)), set(), broadcast_graph.value))
+
+    # List of sets
+    results = [item for sublist in result_rdd.collect() for item in sublist]
+    # Return the list of unique sets transposed as a list
+    return list(map(set, set(map(frozenset, results))))
+
+def main():
+    G1 = nx.gnp_random_graph(200, 0.5, directed=False)
+
+    sc = SparkContext(appName="BronKerbosch")
+    results = parallel_bronKerbosch(sc, G1)
+    print(results)
+    sc.stop()
+
+
+if __name__ == "__main__":
+    # benchmark
+    start_time = time.time()
+    main()
+    end_time = time.time()
+    print("Time elapsed: ", end_time - start_time)
