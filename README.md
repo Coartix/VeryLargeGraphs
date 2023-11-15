@@ -1,7 +1,11 @@
-sudo apt-get install openjdk-8-jdk
+Need:
+Java 8
+Pyspark 3.5.0
+Spark 3.5.0
 
-sudo update-alternatives --config java
 
+1) Benchmark on list computations from local to spark cluster.
 
-export JAVA_HOME=/path/to/java8
-export PATH=$JAVA_HOME/bin:$PATH
+2) Benchmark on BronKerbosch algorithm from local to spark cluster.
+
+3) Ideas to improve spark cluster.

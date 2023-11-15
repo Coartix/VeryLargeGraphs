@@ -1,5 +1,6 @@
+from pyspark import SparkConf, SparkContext
+from pyspark.sql import SparkSession
 import networkx as nx
-from pyspark import SparkContext
 import time
 
 def bronKerbosch1_parallel(R, P, X, G):
@@ -35,9 +36,13 @@ def parallel_bronKerbosch(sc, graph):
 def main():
     G1 = nx.gnp_random_graph(200, 0.5, directed=False)
 
-    sc = SparkContext(appName="BronKerbosch")
+    # Configure Spark to use multiple cores
+    conf = SparkConf().setAppName("BronKerbosch")
+    sc = SparkContext(conf=conf)
+    
     results = parallel_bronKerbosch(sc, G1)
     print(results)
+    
     sc.stop()
 
 
