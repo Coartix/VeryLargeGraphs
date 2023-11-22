@@ -14,6 +14,6 @@ Spark 3.5.0
 
 /opt/spark/sbin/start-slave.sh spark://10.41.178.221:7077
 
-/opt/spark/sbin/start-master.sh
+/opt/spark/sbin/start-master.sh    (be careful of ip address on /opt/spark/conf/spark-env.sh)
 
 Master env on localhost:8080
