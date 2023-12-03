@@ -2,6 +2,10 @@ from pyspark import SparkConf, SparkContext
 from pyspark.sql import SparkSession
 import networkx as nx
 import time
+import logging
+
+# Configure logging
+logging.basicConfig(filename='spark_app.log', filemode='w', level=logging.INFO)
 
 def bronKerbosch1_parallel(R, P, X, G):
     if len(P) == 0 and len(X) == 0:
@@ -34,21 +38,24 @@ def parallel_bronKerbosch(sc, graph):
     return list(map(set, set(map(frozenset, results))))
 
 def main():
-    G1 = nx.gnp_random_graph(200, 0.5, directed=False)
+    G1 = nx.gnp_random_graph(100, 0.5, directed=False)
 
     # Configure Spark to use multiple cores
     conf = SparkConf().setAppName("BronKerbosch")
     sc = SparkContext(conf=conf)
-    
-    results = parallel_bronKerbosch(sc, G1)
-    print(results)
-    
-    sc.stop()
 
+    try:
+        start_time = time.time()
+        results = parallel_bronKerbosch(sc, G1)
+        end_time = time.time()
+        # Take the bigger set inside the list
+        results = max(results, key=len)
+        logging.info("Results: %s", results)
+        logging.info("Time elapsed: %s", end_time - start_time)
+    except Exception as e:
+        logging.error("An error occurred: %s", str(e))
+    finally:
+        sc.stop()
 
 if __name__ == "__main__":
-    # benchmark
-    start_time = time.time()
     main()
-    end_time = time.time()
-    print("Time elapsed: ", end_time - start_time)
